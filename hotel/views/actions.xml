@@ -1,0 +1,25 @@
+<odoo>
+    <record id="action_hotel_list" model="ir.actions.act_window">
+        <field name="name">Hotels</field>
+        <field name="res_model">hotel.management</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_room_list" model="ir.actions.act_window">
+        <field name="name">Rooms</field>
+        <field name="res_model">room.management</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_room_booking" model="ir.actions.act_window">
+        <field name="name">Room Bookings</field>
+        <field name="res_model">room.booking</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_room_feature" model="ir.actions.act_window">
+        <field name="name">Room Features</field>
+        <field name="res_model">room.feature</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

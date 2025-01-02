@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Room Feature List View -->
+        <record id="view_room_feature_list" model="ir.ui.view">
+            <field name="name">room.feature.list</field>
+            <field name="model">room.feature</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Room Feature Form View -->
+        <record id="view_room_feature_form" model="ir.ui.view">
+            <field name="name">room.feature.form</field>
+            <field name="model">room.feature</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

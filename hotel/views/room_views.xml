@@ -1,0 +1,54 @@
+<odoo>
+    <!-- Room List View -->
+    <record id="view_room_list" model="ir.ui.view">
+        <field name="name">room.management.list</field>
+        <field name="model">room.management</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="room_code"/>
+                <field name="hotel_id"/>
+                <field name="bed_type"/>
+                <field name="price"/>
+                <field name="status"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Room Form View -->
+    <record id="view_room_form" model="ir.ui.view">
+        <field name="name">room.management.form</field>
+        <field name="model">room.management</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="hotel_id"/>
+                        <field name="hotel_address" readonly="1"/>
+                        <field name="room_code"/>
+                        <field name="bed_type"/>
+                        <field name="price"/>
+                        <field name="status"/>
+                    </group>
+                    <notebook>
+                        <page string="Features">
+                            <field name="features_ids" widget="many2many_tags"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Room Search View -->
+    <record id="view_room_search" model="ir.ui.view">
+        <field name="name">room.management.search</field>
+        <field name="model">room.management</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="room_code"/>
+                <field name="hotel_id"/>
+                <field name="bed_type"/>
+            </search>
+        </field>
+    </record>
+</odoo>
