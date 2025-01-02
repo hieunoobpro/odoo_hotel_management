@@ -8,6 +8,7 @@
     'depends': ['base'],
     'data': [
         'security/ir.model.access.csv',
+        'data/ir_sequence_data.xml',
         'views/hotel_views.xml',
         'views/room_views.xml',
         'views/booking_views.xml',

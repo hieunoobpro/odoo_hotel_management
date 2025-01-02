@@ -1,11 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <!-- Room Booking List View -->
     <record id="view_room_booking_list" model="ir.ui.view">
         <field name="name">room.booking.list</field>
         <field name="model">room.booking</field>
         <field name="arch" type="xml">
-            <list>
+            <list string="Room Bookings">
                 <field name="booking_code"/>
                 <field name="customer_name"/>
                 <field name="booking_date"/>
@@ -21,17 +20,20 @@
         <field name="name">room.booking.form</field>
         <field name="model">room.booking</field>
         <field name="arch" type="xml">
-            <form>
+            <form string="Room Booking">
                 <sheet>
                     <group>
                         <field name="booking_code"/>
                         <field name="customer_name"/>
                         <field name="booking_date"/>
-                        <field name="hotel_id"/>
-                        <field name="room_type"/>
-                        <field name="room_id"/>
-                        <field name="checkin_date"/>
-                        <field name="checkout_date"/>
+                        <field name="hotel_id" options="{'no_create': True}" required="1"/>
+                        <field name="hotel_name" readonly="1"/>
+                        <field name="hotel_address" readonly="1"/>
+                        <field name="room_type" required="1"/>
+                        <field name="room_id" domain="[('hotel_id', '=', hotel_id), ('status', '=', 'available')]" options="{'no_create': True}" required="1"/>
+                        <field name="room_code" readonly="1"/>
+                        <field name="checkin_date" required="1"/>
+                        <field name="checkout_date" required="1"/>
                         <field name="status"/>
                     </group>
                 </sheet>
