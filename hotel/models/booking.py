@@ -17,7 +17,7 @@ class RoomBooking(models.Model):
     room_code = fields.Char(related='room_id.room_code', string='Room Code', readonly=True)
     checkin_date = fields.Date(string='Check-in Date', required=True)
     checkout_date = fields.Date(string='Check-out Date', required=True)
-    status = fields.Selection([('new', 'New'), ('confirmed', 'Confirmed'), ('booked', "Booked")], string='Booking Status', default='new')
+    status = fields.Selection([('new', 'New'), ('booked', "Booked")], string='Booking Status', default='new')
     active = fields.Boolean(string='Active', default=True)
 
     @api.onchange('hotel_id')
@@ -35,6 +35,19 @@ class RoomBooking(models.Model):
         for record in self:
             if record.checkin_date > record.checkout_date:
                 raise ValidationError('Check-in date must be before the check-out date!')
+            
+    @api.constrains('checkin_date', 'checkout_date', 'room_id')
+    def _check_room_availability(self):
+        for record in self:
+            overlapping_bookings = self.env['room.booking'].search([
+                ('room_id', '=', record.room_id.id),
+                ('id', '!=', record.id),
+                ('checkin_date', '<', record.checkout_date),
+                ('checkout_date', '>', record.checkin_date),
+                ('status', '!=', 'cancelled')
+            ])
+            if overlapping_bookings:
+                raise ValidationError('The room is already booked for the selected dates.')       
 
     def action_confirm_create(self):
         
