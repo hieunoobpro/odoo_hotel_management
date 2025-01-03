@@ -22,7 +22,7 @@
                         <group>
                             <field name="name"/>
                         </group>
-                        
+                           <button name="action_confirm_create" type="object" string="Create" class="btn-primary"/>
                     </sheet>
                 </form>
             </field>

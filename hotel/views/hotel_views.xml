@@ -4,7 +4,7 @@
         <field name="name">hotel.management.list</field>
         <field name="model">hotel.management</field>
         <field name="arch" type="xml">
-            <list>
+            <list string="Hotels">
                 <field name="name"/>
                 <field name="code"/>
                 <field name="address"/>
@@ -19,7 +19,7 @@
         <field name="name">hotel.management.form</field>
         <field name="model">hotel.management</field>
         <field name="arch" type="xml">
-            <form>
+            <form string="Hotel Management">
                 <sheet>
                     <group>
                         <field name="name"/>
@@ -28,7 +28,7 @@
                         <field name="floors"/>
                         <field name="total_rooms" readonly="1"/>
                     </group>
-                   <notebook>
+                    <notebook>
                         <page string="Rooms">
                             <field name="room_ids">
                                 <list string="Rooms">
@@ -40,22 +40,8 @@
                             </field>
                         </page>
                     </notebook>
-                
-                </sheet>
+                        <button name="action_confirm_create" type="object" string="Create" class="btn-primary"/>                </sheet>
             </form>
-        </field>
-    </record>
-
-    <!-- Hotel Search View -->
-    <record id="view_hotel_search" model="ir.ui.view">
-        <field name="name">hotel.management.search</field>
-        <field name="model">hotel.management</field>
-        <field name="arch" type="xml">
-            <search>
-                <field name="name"/>
-                <field name="code"/>
-                <field name="address"/>
-            </search>
         </field>
     </record>
 </odoo>
