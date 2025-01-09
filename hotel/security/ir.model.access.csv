@@ -3,3 +3,6 @@ access_hotel_management,access_hotel_management,model_hotel_management,,1,1,1,1
 access_room_management,access_room_management,model_room_management,,1,1,1,1
 access_room_booking,access_room_booking,model_room_booking,,1,1,1,1
 access_room_feature,access_room_feaeture,model_room_feature,,1,1,1,1
+access_hr_employee,access_hr_employee,model_hr_employee,,1,1,1,1
+
+

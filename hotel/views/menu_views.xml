@@ -8,5 +8,6 @@
         <menuitem id="room_menu" name="Rooms" parent="hotel_management_main_menu" action="action_room_list" sequence="30"/>
         <menuitem id="room_booking" name="Room Booking" parent="hotel_management_main_menu" action="action_room_booking" sequence="40"/>
         <menuitem id="room_feature" name="Room Features" parent="hotel_management_main_menu" action="action_room_feature" sequence="50"/>
+        <menuitem id="menu_hr_root" name="HR Management" parent="hotel_management_main_menu" action="action_employee_list"  sequence="60"/>
     </data>
 </odoo>

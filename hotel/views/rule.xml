@@ -1,0 +1,10 @@
+<odod>
+
+    <record id="rule_hotel_employee" model="ir.rule">
+        <field name="name">Employee Hotel Rule</field>
+        <field name="model_id" ref="model_hotel_category"/>
+        <field name="domain_force">[('manager_id.hotel_ids', 'in', user.hotel_ids.ids)]</field>
+        <field name="groups" ref="group_employee"/>
+    </record>
+
+</odod>

@@ -1,7 +1,6 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
 
-# 4. Room Booking Model
 class RoomBooking(models.Model):
     _name = 'room.booking'
     _description = 'Room Booking'
@@ -19,16 +18,26 @@ class RoomBooking(models.Model):
     checkout_date = fields.Date(string='Check-out Date', required=True)
     status = fields.Selection([('new', 'New'), ('booked', "Booked")], string='Booking Status', default='new')
     active = fields.Boolean(string='Active', default=True)
+    
+    @api.model
+    def _get_manager_rule(self):
+        return [
+            ('hotel_id.manager_id', '=', self.env.user.id)
+        ]
 
     @api.onchange('hotel_id')
     def _onchange_hotel_id(self):
         self.room_id = False
+        self.room_code = False
         return {'domain': {'room_id': [('hotel_id', '=', self.hotel_id.id), ('status', '=', 'available')]}}
 
     @api.onchange('room_id')
     def _onchange_room_id(self):
         if self.room_id:
+            self.room_code = self.room_id.room_code
             self.room_type = self.room_id.bed_type
+        else:
+            self.room_code = False
 
     @api.constrains('checkin_date', 'checkout_date')
     def _check_dates(self):

@@ -1,7 +1,6 @@
-from odoo import models, fields, api
-from odoo.exceptions import UserError, ValidationError
+from odoo import models, fields
+from odoo.exceptions import UserError
 
-# 3. Room Features Model
 class RoomFeature(models.Model):
     _name = 'room.feature'
     _description = 'Room Features'

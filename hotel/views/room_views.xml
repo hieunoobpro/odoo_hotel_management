@@ -47,9 +47,11 @@
         <field name="model">room.management</field>
         <field name="arch" type="xml">
             <search>
+            
                 <field name="room_code"/>
                 <field name="hotel_id"/>
                 <field name="bed_type"/>
+                <field name="status"/>
             </search>
         </field>
     </record>

@@ -1,7 +1,6 @@
-from odoo import models, fields, api
-from odoo.exceptions import UserError, ValidationError
+from odoo import models, fields
+from odoo.exceptions import UserError
 
-# 2. Room Management Model
 class RoomManagement(models.Model):
     _name = 'room.management'
     _description = 'Room Management'
@@ -28,9 +27,8 @@ class RoomManagement(models.Model):
         }
         
     def action_cancel(self):
-        self.env['ir.ui.view'].clear_cache()  # Clear cache to discard changes in the form
+        self.env['ir.ui.view'].clear_cache() 
 
-        # Return to the room list view
         return {
             'type': 'ir.actions.act_window',
             'name': 'Rooms',

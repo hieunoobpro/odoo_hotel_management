@@ -1,7 +1,6 @@
 from odoo import models, fields, api
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import UserError
 
-# 1. Hotel Management Model
 class HotelManagement(models.Model):
     _name = 'hotel.management'
     _description = 'Hotel Management'
@@ -13,6 +12,12 @@ class HotelManagement(models.Model):
     total_rooms = fields.Integer(string='Total Rooms', compute='_compute_total_rooms', store=True)
     room_ids = fields.One2many('room.management', 'hotel_id', string='Rooms')
     active = fields.Boolean(string='Active', default=True)
+    manager_id = fields.Many2one(
+        'res.users', 
+        string='Manager',
+        domain=lambda self: [('groups_id', 'in', self.env.ref('base.group_user').id)]
+    )
+    employee_ids = fields.One2many('hr.employee', 'hotel_id', string="Employees")
 
     @api.depends('room_ids')
     def _compute_total_rooms(self):
@@ -33,10 +38,7 @@ class HotelManagement(models.Model):
         
     def action_cancel(self):
         """Discard changes and return to the list view."""
-        # Discard any unsaved changes
-        self.env['ir.ui.view'].clear_cache()  # Clear cache to discard changes in the form
-
-        # Return to the room list view
+        self.env['ir.ui.view'].clear_cache()
         return {
             'type': 'ir.actions.act_window',
             'name': 'Rooms',
