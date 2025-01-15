@@ -60,13 +60,37 @@ class RoomBooking(models.Model):
                 'origin': record.booking_code,
             })
 
+            # Generate dynamic product name
+            if record.room_code and record.checkin_date and record.checkout_date:
+                checkin = fields.Date.from_string(record.checkin_date).strftime('%d/%m')
+                checkout = fields.Date.from_string(record.checkout_date).strftime('%d/%m')
+                sale_name = f"{record.room_code} {checkin} - {checkout}"
+            else:
+                sale_name = "Room Booking"
+
+            # Check if a product with the same name exists, otherwise create it
+            product = self.env['product.product'].search([('name', '=', sale_name)], limit=1)
+            if not product:
+                product = self.env['product.product'].create({
+                    'name': sale_name,
+                    'type': 'service',  # Define the product type (service or consumable)
+                    'list_price': record.total_amount,  # Optional: set the list price
+                })
+               # Calculate stay duration in days
+            if record.checkin_date and record.checkout_date:
+                duration = (record.checkout_date - record.checkin_date).days
+                if duration <= 0:
+                    raise UserError("Check-out date must be later than check-in date.")
+            else:
+                duration = 0
+
             # Create Sale Order Line
             self.env['sale.order.line'].create({
                 'order_id': sale_order.id,
-                'name': record.room_id.name or 'Room Booking',
-                'product_uom_qty': 1,
-                'price_unit': record.total_amount,
-                'product_id': record.room_id.product_id.id,
+                'name': product.name,
+                'product_uom_qty': duration,
+                'price_unit': record.room_price,
+                'product_id': product.id,
             })
 
             # Link Sale Order to Booking and Mark Payment as Paid
@@ -80,6 +104,7 @@ class RoomBooking(models.Model):
             'res_model': 'sale.order',
             'res_id': sale_order.id,
         }
+
     
     @api.depends('checkin_date', 'checkout_date', 'room_price')
     def _compute_total_amount(self):
