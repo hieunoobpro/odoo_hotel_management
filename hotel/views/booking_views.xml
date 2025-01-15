@@ -13,6 +13,9 @@
                 <field name="checkin_date"/>
                 <field name="checkout_date"/>
                 <field name="status"/>
+                <field name="payment_status"/>
+                <field name="payment_date"/>
+                <field name="total_amount"/>
             </list>
         </field>
     </record>
@@ -27,9 +30,13 @@
                     <group>
                         <field name="booking_code"/>                     
                         <field name="customer_name"/>
+                        <field name="customer_email"/>
+                        <field name="customer_phone"/>
                         <field name="booking_date"/>
                         <field name="hotel_id" options="{'no_create': True}" required="1"/>
                         <field name="hotel_name" readonly="1"/>
+                        <field name="room_price" readonly="1"/> 
+                        <field name="total_amount"/>
                         <field name="hotel_address" readonly="1"/>
                         <field name="room_type" required="1"/>
                         <field name="room_id" domain="[('hotel_id', '=', hotel_id), ('status', '=', 'available')]" options="{'no_create': True}" required="1"/>
@@ -38,8 +45,9 @@
                         <field name="checkout_date" required="1"/>
                         <field name="status"/>
                     </group>
-                        <!-- Confirm Button -->
-                        <button name="action_confirm_create" type="object" string="Create" class="btn-primary"/>
+    
+                       <button name="action_confirm_create" type="object" string="Create" class="btn-primary"/>
+                       <button name="action_create_invoice" type="object" string="Create Invoice" class="btn-primary"/>
                 </sheet>
             </form>
         </field>

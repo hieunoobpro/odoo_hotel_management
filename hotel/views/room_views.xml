@@ -10,6 +10,7 @@
                 <field name="bed_type"/>
                 <field name="price"/>
                 <field name="status"/>
+                <field name="last_rented_date"/>
             </list>
         </field>
     </record>
@@ -27,6 +28,7 @@
                         <field name="room_code"/>
                         <field name="bed_type"/>
                         <field name="price"/>
+                         <field name="last_rented_date"/>
                         <field name="status"/>
                     </group>
                     <notebook>

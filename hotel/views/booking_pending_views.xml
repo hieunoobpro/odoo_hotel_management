@@ -1,0 +1,20 @@
+<odoo>
+    <!-- List View chỉ dành cho Booking ở trạng thái 'new' -->
+    <record id="view_room_booking_pending_list" model="ir.ui.view">
+        <field name="name">room.booking.pending.list</field>
+        <field name="model">room.booking</field>
+        <field name="arch" type="xml">
+            <list string="Pending Room Bookings">
+                <field name="booking_code"/>
+                <field name="customer_name"/>
+                <field name="hotel_name"/>
+                <field name="room_type"/>
+                <field name="checkin_date"/>
+                <field name="checkout_date"/>
+                <field name="status"/>
+                
+            </list>
+        </field>
+    </record>
+
+</odoo>

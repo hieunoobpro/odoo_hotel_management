@@ -2,6 +2,7 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_hotel_management,access_hotel_management,model_hotel_management,,1,1,1,1
 access_room_management,access_room_management,model_room_management,,1,1,1,1
 access_room_booking,access_room_booking,model_room_booking,,1,1,1,1
+access_booking_payment_wizard,access_booking_payment_wizard,model_booking_payment_wizard,,1,1,1,1
 access_room_feature,access_room_feaeture,model_room_feature,,1,1,1,1
 access_hr_employee,access_hr_employee,model_hr_employee,,1,1,1,1
 

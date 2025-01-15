@@ -1,5 +1,9 @@
-from odoo import models, fields
+from datetime import date, timedelta
+import logging
+from odoo import api, models, fields
 from odoo.exceptions import UserError
+
+_logger = logging.getLogger(__name__)
 
 class RoomManagement(models.Model):
     _name = 'room.management'
@@ -11,8 +15,24 @@ class RoomManagement(models.Model):
     bed_type = fields.Selection([('single', 'Single'), ('double', 'Double')], string='Bed Type', required=True)
     price = fields.Float(string='Room Price', required=True)
     features_ids = fields.Many2many('room.feature', string='Room Features')
+    last_rented_date = fields.Date(string='Last Rented Date', default=date.today) 
     status = fields.Selection([('available', 'Available'), ('booked', 'Booked')], string='Room Status', default='available')
     active = fields.Boolean(string='Active', default=True)
+    
+    @api.model
+    def find_unbooked_rooms(self):
+        seven_days_ago = date.today() - timedelta(days=7)
+        unbooked_rooms = self.search([
+            ('status', '=', 'available'),
+            ('last_rented_date', '<=', seven_days_ago)
+        ])
+
+        for room in unbooked_rooms:
+            room_info = f"Room: {room.room_code}, Hotel: {room.hotel_id.name}"
+            _logger.info(room_info)
+
+        if not unbooked_rooms:
+            _logger.info("No unbooked rooms found exceeding 7 days.")
 
     def action_confirm_create(self):
         for record in self:

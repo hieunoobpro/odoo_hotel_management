@@ -8,6 +8,7 @@
             <field name="arch" type="xml">
                 <list>
                     <field name="name"/>
+                    <field name="description"/>
                 </list>
             </field>
         </record>
@@ -21,6 +22,7 @@
                     <sheet>
                         <group>
                             <field name="name"/>
+                            <field name="description"/>
                         </group>
                            <button name="action_confirm_create" type="object" string="Create" class="btn-primary"/>
                     </sheet>

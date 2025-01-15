@@ -7,6 +7,7 @@ class RoomFeature(models.Model):
 
     name = fields.Char(string='Feature Name', required=True)
     active = fields.Boolean(string='Active', default=True)
+    description = fields.Char(string='Feature Description', required=True)
     
     def action_confirm_create(self):
         for record in self:
