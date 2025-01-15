@@ -1,0 +1,11 @@
+<odoo>
+    <data>
+
+        <!-- Main Menu -->
+        <menuitem id="main_menu" name="Custom Sale Module" sequence="10"/>
+
+        <!-- Submenu under the main menu -->
+        <menuitem id="submenu_order" name="Sales Orders" parent="main_menu" action="action_sale_order" sequence="1"/>
+
+    </data>
+</odoo>
