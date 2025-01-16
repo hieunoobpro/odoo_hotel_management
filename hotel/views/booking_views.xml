@@ -72,6 +72,7 @@
                                 <field name="name"/>
                                 <field name="description"/>
                                 <field name="price"/>
+                                <field name="quantity"/>
                             </list>
                         </field>
                     </group>

@@ -42,10 +42,12 @@ class RoomBooking(models.Model):
         for record in self:
             if record.payment_status == 'paid':
                 raise UserError("Payment has already been made for this booking.")
-
-            # Search for the customer in res.partner
+            
+            # Search for an existing Sale Order by origin
+            sale_order = self.env['sale.order'].search([('origin', '=', record.booking_code)], limit=1)
+            
+            # Search or create partner
             partner = self.env['res.partner'].search([('name', '=', record.customer_name)], limit=1)
-
             if not partner:
                 partner = self.env['res.partner'].create({
                     'name': record.customer_name,
@@ -53,60 +55,87 @@ class RoomBooking(models.Model):
                     'phone': record.customer_phone,
                 })
 
-            # Create Sale Order
-            sale_order = self.env['sale.order'].create({
-                'partner_id': partner.id,
-                'origin': record.booking_code,  # Booking name as origin
-            })
+            if not sale_order:
+                # Create a new Sale Order if none exists
+                sale_order = self.env['sale.order'].create({
+                    'partner_id': partner.id,
+                    'origin': record.booking_code,  # Booking code as origin
+                })
+            else:
+                # Update the Sale Order partner if needed
+                sale_order.partner_id = partner.id
 
-            # Add room booking line (Treating room as a product)
+            # Handle Room Booking Line
             if record.room_code and record.checkin_date and record.checkout_date:
                 duration = (record.checkout_date - record.checkin_date).days
                 if duration <= 0:
                     raise UserError("Check-out date must be later than check-in date.")
+                
                 sale_name = f"{record.room_code} {record.checkin_date.strftime('%d/%m')} - {record.checkout_date.strftime('%d/%m')}"
-                # Check if a product with the same name exists, otherwise create it
                 product = self.env['product.product'].search([('name', '=', sale_name)], limit=1)
                 if not product:
                     product = self.env['product.product'].create({
                         'name': sale_name,
-                        'type': 'service',  # Define the product type (service or consumable)
-                        'list_price': record.total_amount,  # Optional: set the list price
+                        'type': 'service',
+                        'list_price': record.total_amount,
                     })
-                room_line = {
-                    'order_id': sale_order.id,
-                    'name': sale_name,
-                    'product_uom_qty': duration,
-                    'price_unit': record.room_price,
-                    'product_id': product.id,
-                    
-                }
-                self.env['sale.order.line'].create(room_line)
+                
+                # Update or create sale order line for the room
+                room_line = self.env['sale.order.line'].search([
+                    ('order_id', '=', sale_order.id),
+                    ('product_id', '=', product.id)
+                ], limit=1)
 
-            # Add service lines (Treating service as a product)
-            for service in record.service_ids:
-                # Check if a product with the same name exists, otherwise create it
-                product_name = f"{service.name} - {service.description}"
-                product = self.env['product.product'].search([('name', '=', sale_name)], limit=1)
-                if not product:
-                    product = self.env['product.product'].create({
-                        'name': product_name,
-                        'type': 'product',  # Define the product type (service or consumable)
-                        'list_price': service.price,  # Optional: set the list price
+                if room_line:
+                    room_line.update({
+                        'product_uom_qty': duration,
+                        'price_unit': record.room_price,
                     })
-                service_line = {
+                else:
+                    self.env['sale.order.line'].create({
+                        'order_id': sale_order.id,
+                        'name': sale_name,
+                        'product_uom_qty': duration,
+                        'price_unit': record.room_price,
+                        'product_id': product.id,
+                    })
+
+        # Handle Service Lines
+        for service in record.service_ids:
+            product_name = f"{service.name} - {service.description}"
+            product = self.env['product.product'].search([('name', '=', product_name)], limit=1)
+            if not product:
+                product = self.env['product.product'].create({
+                    'name': product_name,
+                    'type': 'service',
+                    'list_price': service.price,
+                })
+
+            # Search for an existing sale.order.line for this service
+            service_line = self.env['sale.order.line'].search([
+                ('order_id', '=', sale_order.id),
+                ('product_id', '=', product.id)
+            ], limit=1)
+
+            if service_line:
+                # Check for differences in quantity and price
+                if service_line.product_uom_qty != service.quantity or service_line.price_unit != service.price:
+                    service_line.update({
+                        'product_uom_qty': service.quantity,
+                        'price_unit': service.price,
+                    })
+            else:
+                # Create a new line if it doesn't exist
+                self.env['sale.order.line'].create({
                     'order_id': sale_order.id,
                     'name': product_name,
-                    'product_uom_qty': 1,
+                    'product_uom_qty': service.quantity,
                     'price_unit': service.price,
-                    'product_id': service.id,
+                    'product_id': product.id,
+                })
 
-                }
-                self.env['sale.order.line'].create(service_line)
-
-            # Link Sale Order to Booking and Mark Payment as Paid
+            # Link Sale Order to Booking
             record.sale_order_id = sale_order.id
-            # record.payment_status = 'paid'
 
         return {
             'type': 'ir.actions.act_window',

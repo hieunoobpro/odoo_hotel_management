@@ -5,7 +5,7 @@
     'author': 'Nguyen Duy Hieu',
     'summary': 'Manage hotels, rooms, and bookings',
     'description': 'A module to manage hotel operations including room management and bookings.',
-    'depends': ['base', 'hr'],
+    'depends': ['base', 'hr', 'account', 'sale' ],
     'data': [
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',
