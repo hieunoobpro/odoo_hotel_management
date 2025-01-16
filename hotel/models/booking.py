@@ -22,12 +22,12 @@ class RoomBooking(models.Model):
                               domain="[('hotel_id', '=', hotel_id), ('status', '=', 'available')]")
     room_code = fields.Char(related='room_id.room_code', string='Room Code', readonly=True)
     room_price = fields.Float(related='room_id.price', string='Room Price', readonly=True)
+    service_ids = fields.Many2many('booking.service', 'booking_service_rel', 'booking_id', 'service_id', string='Services')
     checkin_date = fields.Datetime(string='Check-in Date', required=True)
     checkout_date = fields.Datetime(string='Check-out Date', required=True)
     status = fields.Selection([('new', 'New'), ('booked', "Booked")], string='Booking Status', default='new')
     active = fields.Boolean(string='Active', default=True)
-    payment_status = fields.Selection([('unpaid', 'Unpaid'), ('paid', 'Paid')], string='Payment Status',default='unpaid', readonly=True
-)
+    payment_status = fields.Selection([('unpaid', 'Unpaid'), ('paid', 'Paid')], string='Payment Status', default='unpaid')
     payment_date = fields.Datetime(string='Payment Date', readonly=True)
     payment_amount = fields.Float(string='Payment Amount', readonly=True)
     
@@ -36,7 +36,7 @@ class RoomBooking(models.Model):
         compute='_compute_total_amount',
         store=True
     )
-    sale_order_id = fields.Many2one('sale.order', string='Sale Order', readonly=True)
+    sale_order_id = fields.Many2one('sale.order', string='Sale Order', readonly=True)         
     
     def action_create_invoice(self):
         for record in self:
@@ -46,7 +46,6 @@ class RoomBooking(models.Model):
             # Search for the customer in res.partner
             partner = self.env['res.partner'].search([('name', '=', record.customer_name)], limit=1)
 
-            # If no customer is found, create a new one
             if not partner:
                 partner = self.env['res.partner'].create({
                     'name': record.customer_name,
@@ -57,45 +56,57 @@ class RoomBooking(models.Model):
             # Create Sale Order
             sale_order = self.env['sale.order'].create({
                 'partner_id': partner.id,
-                'origin': record.booking_code,
+                'origin': record.booking_code,  # Booking name as origin
             })
 
-            # Generate dynamic product name
+            # Add room booking line (Treating room as a product)
             if record.room_code and record.checkin_date and record.checkout_date:
-                checkin = fields.Date.from_string(record.checkin_date).strftime('%d/%m')
-                checkout = fields.Date.from_string(record.checkout_date).strftime('%d/%m')
-                sale_name = f"{record.room_code} {checkin} - {checkout}"
-            else:
-                sale_name = "Room Booking"
-
-            # Check if a product with the same name exists, otherwise create it
-            product = self.env['product.product'].search([('name', '=', sale_name)], limit=1)
-            if not product:
-                product = self.env['product.product'].create({
-                    'name': sale_name,
-                    'type': 'service',  # Define the product type (service or consumable)
-                    'list_price': record.total_amount,  # Optional: set the list price
-                })
-               # Calculate stay duration in days
-            if record.checkin_date and record.checkout_date:
                 duration = (record.checkout_date - record.checkin_date).days
                 if duration <= 0:
                     raise UserError("Check-out date must be later than check-in date.")
-            else:
-                duration = 0
+                sale_name = f"{record.room_code} {record.checkin_date.strftime('%d/%m')} - {record.checkout_date.strftime('%d/%m')}"
+                # Check if a product with the same name exists, otherwise create it
+                product = self.env['product.product'].search([('name', '=', sale_name)], limit=1)
+                if not product:
+                    product = self.env['product.product'].create({
+                        'name': sale_name,
+                        'type': 'service',  # Define the product type (service or consumable)
+                        'list_price': record.total_amount,  # Optional: set the list price
+                    })
+                room_line = {
+                    'order_id': sale_order.id,
+                    'name': sale_name,
+                    'product_uom_qty': duration,
+                    'price_unit': record.room_price,
+                    'product_id': product.id,
+                    
+                }
+                self.env['sale.order.line'].create(room_line)
 
-            # Create Sale Order Line
-            self.env['sale.order.line'].create({
-                'order_id': sale_order.id,
-                'name': product.name,
-                'product_uom_qty': duration,
-                'price_unit': record.room_price,
-                'product_id': product.id,
-            })
+            # Add service lines (Treating service as a product)
+            for service in record.service_ids:
+                # Check if a product with the same name exists, otherwise create it
+                product_name = f"{service.name} - {service.description}"
+                product = self.env['product.product'].search([('name', '=', sale_name)], limit=1)
+                if not product:
+                    product = self.env['product.product'].create({
+                        'name': product_name,
+                        'type': 'product',  # Define the product type (service or consumable)
+                        'list_price': service.price,  # Optional: set the list price
+                    })
+                service_line = {
+                    'order_id': sale_order.id,
+                    'name': product_name,
+                    'product_uom_qty': 1,
+                    'price_unit': service.price,
+                    'product_id': service.id,
+
+                }
+                self.env['sale.order.line'].create(service_line)
 
             # Link Sale Order to Booking and Mark Payment as Paid
             record.sale_order_id = sale_order.id
-            record.payment_status = 'paid'
+            # record.payment_status = 'paid'
 
         return {
             'type': 'ir.actions.act_window',
@@ -104,22 +115,19 @@ class RoomBooking(models.Model):
             'res_model': 'sale.order',
             'res_id': sale_order.id,
         }
-
-    
-    @api.depends('checkin_date', 'checkout_date', 'room_price')
+        
+    @api.depends('checkin_date', 'checkout_date', 'room_price', 'service_ids.price')
     def _compute_total_amount(self):
         for record in self:
+            room_cost = 0.0
+            service_cost = sum(service.price for service in record.service_ids)
+
             if record.checkin_date and record.checkout_date and record.room_price:
-                # Calculate the duration of the stay in hours
                 duration = (record.checkout_date - record.checkin_date).total_seconds() / 3600
-                # Convert duration to days (considering partial days)
                 duration_in_days = duration / 24
-                if duration_in_days > 0:
-                    record.total_amount = duration_in_days * record.room_price
-                else:
-                    record.total_amount = record.room_price
-            else:
-                record.total_amount = 0.0
+                room_cost = max(duration_in_days, 1) * record.room_price
+
+            record.total_amount = room_cost + service_cost
     
     @api.model
     def create(self, vals):

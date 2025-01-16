@@ -16,6 +16,7 @@
         'views/booking_views.xml',
         'views/feature_views.xml',
         'views/employee_views.xml',
+        'views/service_views.xml',
         'views/payment_booking_wizard.xml',
         'views/menu_views.xml',
         'views/actions.xml',
