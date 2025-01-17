@@ -37,15 +37,15 @@ class RoomBooking(models.Model):
         store=True
     )
     sale_order_id = fields.Many2one('sale.order', string='Sale Order', readonly=True)         
-    
+
     def action_create_invoice(self):
         for record in self:
             if record.payment_status == 'paid':
                 raise UserError("Payment has already been made for this booking.")
-            
+
             # Search for an existing Sale Order by origin
             sale_order = self.env['sale.order'].search([('origin', '=', record.booking_code)], limit=1)
-            
+
             # Search or create partner
             partner = self.env['res.partner'].search([('name', '=', record.customer_name)], limit=1)
             if not partner:
@@ -56,30 +56,39 @@ class RoomBooking(models.Model):
                 })
 
             if not sale_order:
-                # Create a new Sale Order if none exists
+                # Create a new Sale Order with additional details
                 sale_order = self.env['sale.order'].create({
                     'partner_id': partner.id,
-                    'origin': record.booking_code,  # Booking code as origin
+                    'origin': record.booking_code,
+                    'user_id': self.env.user.id,  # Assign current user as salesperson
+                    'company_id': self.env.company.id,  # Ensure correct company
+                    'note': f"Booking Code: {record.booking_code}\n"
+                            f"Hotel: {record.hotel_name}\n"
+                            f"Check-in Date: {record.checkin_date}\n"
+                            f"Check-out Date: {record.checkout_date}\n"
+                            f"Room Code: {record.room_code}\n"
+                            f"Customer Email: {record.customer_email}\n"
+                            f"Customer Phone: {record.customer_phone}",
                 })
             else:
-                # Update the Sale Order partner if needed
+                # Update the Sale Order details
                 sale_order.partner_id = partner.id
+                sale_order.note = (sale_order.note or '') + f"\nUpdated Booking: {record.booking_code}"
 
             # Handle Room Booking Line
             if record.room_code and record.checkin_date and record.checkout_date:
                 duration = (record.checkout_date - record.checkin_date).days
                 if duration <= 0:
                     raise UserError("Check-out date must be later than check-in date.")
-                
-                sale_name = f"{record.room_code} {record.checkin_date.strftime('%d/%m')} - {record.checkout_date.strftime('%d/%m')}"
-                product = self.env['product.product'].search([('name', '=', sale_name)], limit=1)
+
+                product = self.env['product.product'].search([('name', '=', "Booking")], limit=1)
                 if not product:
                     product = self.env['product.product'].create({
-                        'name': sale_name,
+                        'name': "Booking",
                         'type': 'service',
                         'list_price': record.total_amount,
                     })
-                
+
                 # Update or create sale order line for the room
                 room_line = self.env['sale.order.line'].search([
                     ('order_id', '=', sale_order.id),
@@ -94,45 +103,42 @@ class RoomBooking(models.Model):
                 else:
                     self.env['sale.order.line'].create({
                         'order_id': sale_order.id,
-                        'name': sale_name,
+                        'name': f"Room {record.room_code} Booking",
                         'product_uom_qty': duration,
                         'price_unit': record.room_price,
                         'product_id': product.id,
                     })
 
-        # Handle Service Lines
-        for service in record.service_ids:
-            product_name = f"{service.name} - {service.description}"
-            product = self.env['product.product'].search([('name', '=', product_name)], limit=1)
-            if not product:
-                product = self.env['product.product'].create({
-                    'name': product_name,
-                    'type': 'service',
-                    'list_price': service.price,
-                })
+            # Handle Service Lines
+            for service in record.service_ids:
+                product_name = f"{service.name} - {service.description}"
+                product = self.env['product.product'].search([('name', '=', product_name)], limit=1)
+                if not product:
+                    product = self.env['product.product'].create({
+                        'name': product_name,
+                        'type': 'service',
+                        'list_price': service.price,
+                    })
 
-            # Search for an existing sale.order.line for this service
-            service_line = self.env['sale.order.line'].search([
-                ('order_id', '=', sale_order.id),
-                ('product_id', '=', product.id)
-            ], limit=1)
+                # Search for an existing sale.order.line for this service
+                service_line = self.env['sale.order.line'].search([
+                    ('order_id', '=', sale_order.id),
+                    ('product_id', '=', product.id)
+                ], limit=1)
 
-            if service_line:
-                # Check for differences in quantity and price
-                if service_line.product_uom_qty != service.quantity or service_line.price_unit != service.price:
+                if service_line:
                     service_line.update({
                         'product_uom_qty': service.quantity,
                         'price_unit': service.price,
                     })
-            else:
-                # Create a new line if it doesn't exist
-                self.env['sale.order.line'].create({
-                    'order_id': sale_order.id,
-                    'name': product_name,
-                    'product_uom_qty': service.quantity,
-                    'price_unit': service.price,
-                    'product_id': product.id,
-                })
+                else:
+                    self.env['sale.order.line'].create({
+                        'order_id': sale_order.id,
+                        'name': product_name,
+                        'product_uom_qty': service.quantity,
+                        'price_unit': service.price,
+                        'product_id': product.id,
+                    })
 
             # Link Sale Order to Booking
             record.sale_order_id = sale_order.id
@@ -144,6 +150,7 @@ class RoomBooking(models.Model):
             'res_model': 'sale.order',
             'res_id': sale_order.id,
         }
+
         
     @api.depends('checkin_date', 'checkout_date', 'room_price', 'service_ids.price')
     def _compute_total_amount(self):
@@ -160,12 +167,12 @@ class RoomBooking(models.Model):
     
     @api.model
     def create(self, vals):
-        booking = super(RoomBooking, self).create(vals)
-        if booking.room_id:
-            booking.room_id.last_rented_date = booking.checkout_date
+        # Update the last rented date when a booking is made
+        room = self.env['room.management'].browse(vals.get('room_id'))
+        if room:
+            room.write({'last_rented_date': fields.Date.today()})
+        return super(RoomBooking, self).create(vals)
 
-        return booking
-    
     @api.model
     def search_unpaid_bookings(self):
         return self.search([('payment_status', '=', 'unpaid')])
@@ -214,6 +221,9 @@ class RoomBooking(models.Model):
             if not record.customer_name:
                 raise UserError('Customer Name is required!')
             record.active = True
+
+        if self.status == 'booked':
+            self.room_id.write({'last_rented_date': self.checkout_date.date()})
 
         return {
             'type': 'ir.actions.act_window',

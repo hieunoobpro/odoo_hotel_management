@@ -28,7 +28,6 @@
                             <field name="price"/>
                             <field name="quantity"/>
                         </group>
-                          
                     </sheet>
                 </form>
             </field>

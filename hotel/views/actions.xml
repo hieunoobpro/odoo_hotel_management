@@ -3,24 +3,30 @@
         <field name="name">Hotels</field>
         <field name="res_model">hotel.management</field>
         <field name="view_mode">list,form</field>
+        <field name="context">{'default_limit': 10}</field>
     </record>
 
     <record id="action_room_list" model="ir.actions.act_window">
         <field name="name">Rooms</field>
         <field name="res_model">room.management</field>
         <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_room_list"/>
+        <field name="domain">[]</field>
+        <field name="context">{'search_default_group_by_hotel': 1, 'limit': 10}</field>
     </record>
 
     <record id="action_room_booking" model="ir.actions.act_window">
         <field name="name">Room Bookings</field>
         <field name="res_model">room.booking</field>
         <field name="view_mode">list,form</field>
+        <field name="context">{'default_limit': 10}</field>
     </record>
 
     <record id="action_room_feature" model="ir.actions.act_window">
         <field name="name">Room Features</field>
         <field name="res_model">room.feature</field>
         <field name="view_mode">list,form</field>
+        <field name="context">{'default_limit': 10}</field>
     </record>
 
     <record id="action_payment_list" model="ir.actions.act_window">
@@ -41,6 +47,7 @@
         <field name="view_mode">list,form</field>
         <field name="domain">[]</field>
         <field name="context">{}</field>
+        <field name="context">{'default_limit': 10}</field>
     </record>
 
     <record id="action_room_booking_pending" model="ir.actions.act_window">
@@ -50,6 +57,7 @@
         <field name="view_id" ref="view_room_booking_pending_list"/>
         <field name="domain">[('status', '=', 'new')]</field>
         <field name="context">{'default_status': 'new'}</field>
+       
     </record>
 
         <!-- Server Action -->

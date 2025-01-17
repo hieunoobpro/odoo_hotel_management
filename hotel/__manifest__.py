@@ -20,6 +20,8 @@
         'views/payment_booking_wizard.xml',
         'views/menu_views.xml',
         'views/actions.xml',
+        'views/booking_report.xml',
+        'views/booking_report_template.xml',
         'data/favorite_filters.xml'
     ],
     'installable': True,

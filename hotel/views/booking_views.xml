@@ -24,6 +24,7 @@
         <field name="model">room.booking</field>
         <field name="arch" type="xml">
             <form string="Room Booking">
+
                 <sheet>
                     <!-- Main Details -->
                     <group>
@@ -58,6 +59,8 @@
                         <group>
                             <field name="checkin_date" required="1"/>
                             <field name="checkout_date" required="1"/>
+                            <field name="status"/>
+                            <field name="payment_status"/>
                         </group>
                         <group>
                             <field name="room_price" readonly="1"/>

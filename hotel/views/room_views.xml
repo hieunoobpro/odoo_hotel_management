@@ -43,13 +43,11 @@
         </field>
     </record>
 
-    <!-- Room Search View -->
     <record id="view_room_search" model="ir.ui.view">
         <field name="name">room.management.search</field>
         <field name="model">room.management</field>
         <field name="arch" type="xml">
             <search>
-            
                 <field name="room_code"/>
                 <field name="hotel_id"/>
                 <field name="bed_type"/>

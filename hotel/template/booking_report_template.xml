@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="report_booking_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="booking">
+                <div class="page">
+                    <h2 style="text-align: center;">Hotel Booking Confirmation</h2>
+                    
+                    <!-- Master Information -->
+                    <table class="table table-bordered" style="width: 100%;">
+                        <tr>
+                            <td><strong>Hotel:</strong></td>
+                            <td t-esc="booking.hotel_id.name or 'N/A'"/>
+                        </tr>
+                        <tr>
+                            <td><strong>Room:</strong></td>
+                            <td t-esc="booking.room_code or 'N/A'"/>
+                        </tr>
+                        <tr>
+                            <td><strong>Customer Name:</strong></td>
+                            <td t-esc="booking.customer_name or 'N/A'"/>
+                        </tr>
+                        <tr>
+                            <td><strong>Email:</strong></td>
+                            <td t-esc="booking.customer_email or 'N/A'"/>
+                        </tr>
+                        <tr>
+                            <td><strong>Phone:</strong></td>
+                            <td t-esc="booking.customer_phone or 'N/A'"/>
+                        </tr>
+                        <tr>
+                            <td><strong>Check-in Date:</strong></td>
+                            <td t-esc="booking.checkin_date or 'N/A'"/>
+                        </tr>
+                        <tr>
+                            <td><strong>Check-out Date:</strong></td>
+                            <td t-esc="booking.checkout_date or 'N/A'"/>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Amount:</strong></td>
+                            <td t-esc="booking.total_amount or 0.0"/> USD
+                        </tr>
+                        <tr>
+                            <td><strong>Payment Status:</strong></td>
+                            <td t-esc="booking.payment_status or 'N/A'"/>
+                        </tr>
+                    </table>
+
+                    <!-- Booking Services -->
+                    <h3>Booking Services</h3>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Service Name</th>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="booking.service_ids" t-as="service">
+                                <tr>
+                                    <td t-esc="service.name or 'N/A'"/>
+                                    <td t-esc="service.description or 'N/A'"/>
+                                    <td t-esc="service.quantity or 1"/>
+                                    <td t-esc="service.price or 0.0"/> USD
+                                    <td t-esc="service.quantity * service.price or 0.0"/> USD
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <h4 style="text-align: right;">Total: <t t-esc="booking.total_amount or 0.0"/> USD</h4>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

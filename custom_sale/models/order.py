@@ -20,6 +20,33 @@ class SaleOrder(models.Model):
         compute='_compute_amounts',
         tracking=4
     )
+    hotel_id = fields.Many2one('hotel.management', string='Hotel', required=True, ondelete='cascade')
+    checkin_date = fields.Date(string="Check-in Date")
+    checkout_date = fields.Date(string="Check-out Date")
+    room_code = fields.Char(string="Room Code")
+    customer_email = fields.Char(string="Customer Email")
+    customer_phone = fields.Char(string="Customer Phone")
+    
+    def action_confirm(self):
+        # Call the original action_confirm method
+        res = super(SaleOrder, self).action_confirm()
+
+        # Now update the related room booking statuses to "paid"
+        for order in self:
+            # Find related room bookings based on the sale order (assuming you have a Many2one field in RoomBooking)
+            bookings = self.env['room.booking'].search([('sale_order_id', '=', order.id)])
+
+            for booking in bookings:
+                if booking.payment_status == 'unpaid':
+                    # Update the payment status to "paid" and record payment date
+                    booking.write({
+                        'status': 'booked',
+                        'payment_status': 'paid',
+                        'payment_date': fields.Datetime.now(),
+                        'payment_amount': order.amount_total  # Assuming the total amount is the payment
+                    })
+
+        return res
 
     @api.depends('order_line.price_subtotal', 'order_line.price_total', 'order_line.tax_id')
     def _compute_amounts(self):

@@ -9,15 +9,16 @@
         
         <!-- Booking Menu -->
         <menuitem id="room_booking" name="Booking" parent="hotel_management_main_menu" sequence="40"/>
-        <menuitem id="room_booked" name="Room Booked" parent="room_booking" action="action_room_booking" sequence="10"/>
-        <menuitem id="room_booking_pending" name="Room Booking Pending" parent="room_booking" action="action_room_booking_pending" sequence="20"/>
-        <menuitem id="room_booking_payment" name="Payment" parent="room_booking" action="action_payment_list" sequence="30"/>
-        <menuitem id="room_booking_unpaid_menu" name="Unpaid Payment" parent="room_booking" action="action_room_booking_unpaid" sequence="40"/>
+            <menuitem id="room_booked" name="Room Booked" parent="room_booking" action="action_room_booking" sequence="10"/>
+            <menuitem id="room_booking_pending" name="Room Booking Pending" parent="room_booking" action="action_room_booking_pending" sequence="20"/>
+            <menuitem id="room_booking_payment" name="Payment" parent="room_booking" action="action_payment_list" sequence="30"/>
+            <menuitem id="room_booking_unpaid_menu" name="Unpaid Payment" parent="room_booking" action="action_room_booking_unpaid" sequence="40"/>
 
+        <!-- Feature Menu -->
         <menuitem id="features" name="Features" parent="hotel_management_main_menu" sequence="50"/>
-        <menuitem id="room_feature" name="Room Features" parent="features" action="action_room_feature" sequence="10"/>
-        <menuitem id="room_booking_service" name="Booking Service" parent="features" action="action_booking_service" sequence="20"/>
+            <menuitem id="room_feature" name="Room Features" parent="features" action="action_room_feature" sequence="10"/>
+            <menuitem id="room_booking_service" name="Booking Service" parent="features" action="action_booking_service" sequence="20"/>
+            <menuitem id="menu_hr_root" name="HR Management" parent="features" action="action_employee_list"  sequence="30"/>
 
-        <menuitem id="menu_hr_root" name="HR Management" parent="hotel_management_main_menu" action="action_employee_list"  sequence="60"/>
     </data>
 </odoo>

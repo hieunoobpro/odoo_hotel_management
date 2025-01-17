@@ -15,9 +15,31 @@ class RoomManagement(models.Model):
     bed_type = fields.Selection([('single', 'Single'), ('double', 'Double')], string='Bed Type', required=True)
     price = fields.Float(string='Room Price', required=True)
     features_ids = fields.Many2many('room.feature', string='Room Features')
-    last_rented_date = fields.Date(string='Last Rented Date', default=date.today) 
+    last_rented_date = fields.Date(string='Last Rented Date') 
     status = fields.Selection([('available', 'Available'), ('booked', 'Booked')], string='Room Status', default='available')
     active = fields.Boolean(string='Active', default=True)
+    
+    @api.model
+    def update_room_status(self):
+        # Get today's date
+        today = date.today()
+        rooms = self.search([])
+
+        for room in rooms:
+            # Check if there are any bookings for this room that overlap with today
+            bookings = self.env['room.booking'].search([
+                ('room_id', '=', room.id),
+                ('checkin_date', '<=', today),
+                ('checkout_date', '>=', today),
+                ('status', '=', 'booked'),  # Assuming 'booked' status means it's occupied
+            ])
+
+            if bookings:
+                room.status = 'booked'
+            else:
+                room.status = 'available'
+
+        return True
     
     @api.model
     def find_unbooked_rooms(self):

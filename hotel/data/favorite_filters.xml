@@ -1,13 +1,4 @@
 <odoo>
-    <record id="favorite_filter" model="ir.filters">
-        <field name="name">New Booking</field>
-        <field name="model_id">room.booking</field> <!-- Replace with your model -->
-        <field name="context">{'search_default_new': 1}</field>
-        <field name="domain">[('status', '=', 'new')]</field> <!-- Replace with your filter condition -->
-        <field name="user_id" eval="False"/> <!-- Set to False for global or user ID for specific -->
-        <field name ="is_default">True</field> <!-- Set to True to make it default -->
-    </record>
-
     <record id="action_room_booking_unpaid" model="ir.actions.act_window">
         <field name="name">Unpaid Room Bookings</field>
         <field name="res_model">room.booking</field>
@@ -16,3 +7,12 @@
         <field name="context">{}</field>
     </record>
 </odoo>
+<!-- 
+    <record id="favorite_filter" model="ir.filters">
+        <field name="name">New Booking</field>
+        <field name="model_id">room.booking</field> 
+        <field name="context">{'search_default_new': 1}</field>
+        <field name="domain">[('status', '=', 'new')]</field>
+        <field name="user_id" eval="False"/> 
+        <field name ="is_default">True</field> 
+    </record> -->

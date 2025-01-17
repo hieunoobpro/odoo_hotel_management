@@ -10,4 +10,14 @@
             <field name="active">True</field>
         </record>
     </data>
+
+    <record id="ir_cron_update_room_status" model="ir.cron">
+        <field name="name">Update Room Status</field>
+        <field name="model_id" ref="model_room_management"/>
+        <field name="state">code</field>
+        <field name="code">model.update_room_status()</field>
+        <field name="interval_type">days</field>
+        <field name="interval_number">1</field>  <!-- Run once a day -->
+        <field name="active" eval="True"/>
+    </record>
 </odoo>
