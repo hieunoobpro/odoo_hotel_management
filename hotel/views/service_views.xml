@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <data>
-        <!-- Room Feature List View -->
         <record id="view_booking_service_list" model="ir.ui.view">
             <field name="name">booking.service.list</field>
             <field name="model">booking.service</field>
             <field name="arch" type="xml">
                 <list>
                     <field name="name"/>
-                    <field name="description"/>
+                    <field name="type"/>
                     <field name="price"/>
                     <field name="quantity"/>
+                    <field name="description"/>
                 </list>
             </field>
         </record>
@@ -24,9 +24,10 @@
                     <sheet>
                         <group>
                             <field name="name"/>
-                            <field name="description"/>
+                            <field name="type"/>
                             <field name="price"/>
                             <field name="quantity"/>
+                            <field name="description"/>
                         </group>
                     </sheet>
                 </form>

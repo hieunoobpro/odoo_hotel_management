@@ -6,5 +6,7 @@ access_booking_payment_wizard,access_booking_payment_wizard,model_booking_paymen
 access_room_feature,access_room_feaeture,model_room_feature,,1,1,1,1
 access_hr_employee,access_hr_employee,model_hr_employee,,1,1,1,1
 access_booking_service,access_booking_service,model_booking_service,,1,1,1,1
+access_booking_product,access_booking_product ,model_booking_product,,1,1,1,1
+
 
 

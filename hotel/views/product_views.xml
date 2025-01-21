@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_product_template_tree_inherit" model="ir.ui.view">
+            <field name="name">product.template.tree.inherit</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_tree_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//list" position="inside">
+                    <!-- Add Custom Fields to the Tree View -->
+                    <field name="quantity_on_hand"/>
+                </xpath>
+            </field>
+
+        </record>
+
+        <record id="view_product_booking_template_form_inherit" model="ir.ui.view">
+            <field name="name">product.template.form.inherit</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_form_view"/>
+            <field name="arch" type="xml">
+                <!-- Inherit the General Information Page -->
+                <xpath expr="//page[@name='general_information']" position="after">
+                    <page name="additional_information" string="Additional Info">
+              
+                        <group>
+                            <field name="quantity_on_hand" string="Quantity"/>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

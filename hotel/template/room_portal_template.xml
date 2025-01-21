@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="portal_my_rooms" name="My Rooms">
+        <t t-call="portal.portal_layout">
+            <div class="container mt-4">
+                <h1>Available Rooms</h1>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Room Code</th>
+                            <th>Room Type</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="rooms" t-as="room">
+                            <tr>
+                                <td><t t-esc="room.room_code"/></td>
+                                <td><t t-esc="room.bed_type"/></td>
+                                <td><t t-esc="room.price"/></td>
+                                <td><t t-esc="room.status"/></td>
+                                <td>
+                                    <a t-att-href="'/book/room/%d' % room.id" class="btn btn-primary">Book Now</a>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_booking_form" name="Booking Form">
+        <t t-call="portal.portal_layout">
+            <t t-set="css_files" t-value="['/hotel/static/src/css/booking_form.css']"/>
+            <t t-call-assets="web.assets_frontend" t-js="false"/>
+            <div class="container booking-form-container">
+                <h1>Booking Form</h1>
+                <form action="/submit/booking" method="post">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <input type="hidden" name="room_id" t-att-value="room.id"/>
+                    <input type="hidden" name="hotel_id" t-att-value="room.hotel_id.id"/>
+                    <input type="hidden" name="room_type" t-att-value="room.bed_type"/>
+                    <div class="form-group">
+                        <label for="room_details">Room Details</label>
+                        <p><strong>Room Code:</strong> <t t-esc="room.room_code"/></p>
+                        <p><strong>Room Type:</strong> <t t-esc="room.bed_type"/></p>
+                        <p><strong>Price:</strong> <t t-esc="room.price"/></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="hotel_details">Hotel Details</label>
+                        <p><strong>Hotel Name:</strong> <t t-esc="room.hotel_id.name"/></p>
+                        <p><strong>Hotel Address:</strong> <t t-esc="room.hotel_id.address"/></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="customer_name">Customer Name</label>
+                        <input type="text" id="customer_name" name="customer_name" class="form-control" required="required"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="customer_email">Customer Email</label>
+                        <input type="email" id="customer_email" name="customer_email" class="form-control" required="required"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="customer_phone">Customer Phone</label>
+                        <input type="text" id="customer_phone" name="customer_phone" class="form-control" required="required"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="customer_address">Customer Address</label>
+                        <input type="text" id="customer_address" name="customer_address" class="form-control"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="checkin_date">Check-in Date</label>
+                        <input type="date" id="checkin_date" name="checkin_date" class="form-control" required="required"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="checkout_date">Check-out Date</label>
+                        <input type="date" id="checkout_date" name="checkout_date" class="form-control" required="required"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="special_requests">Special Requests</label>
+                        <textarea id="special_requests" name="special_requests" class="form-control"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="services">Services</label>
+                        <select id="services" name="services" class="form-control" multiple="multiple">
+                            <t t-foreach="services" t-as="service">
+                                <option t-att-value="service.id">
+                                    <t t-esc="service.name"/> - <t t-esc="service.price"/> - <t t-esc="service.description"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="payment_method">Payment Method</label>
+                        <select id="payment_method" name="payment_method" class="form-control">
+                            <option value="credit_card">Credit Card</option>
+                            <option value="cash">Cash</option>
+                            <option value="bank_transfer">Bank Transfer</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Booking</button>
+                </form>
+            </div>
+        </t>
+    </template>
+</odoo>

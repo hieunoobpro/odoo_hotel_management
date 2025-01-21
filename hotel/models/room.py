@@ -12,12 +12,24 @@ class RoomManagement(models.Model):
     hotel_id = fields.Many2one('hotel.management', string='Hotel', required=True, ondelete='cascade')
     hotel_address = fields.Text(related='hotel_id.address', string='Hotel Address', readonly=True)
     room_code = fields.Char(string='Room Code', required=True)
-    bed_type = fields.Selection([('single', 'Single'), ('double', 'Double')], string='Bed Type', required=True)
+    bed_type = fields.Selection([('single', 'Single'), ('double', 'Double'), ('suite', 'Suite')], string='Bed Type', required=True)
     price = fields.Float(string='Room Price', required=True)
     features_ids = fields.Many2many('room.feature', string='Room Features')
     last_rented_date = fields.Date(string='Last Rented Date') 
-    status = fields.Selection([('available', 'Available'), ('booked', 'Booked')], string='Room Status', default='available')
+    status = fields.Selection([('available', 'Available'), ('booked', 'Booked'), ('maintaining', 'Maintaining')], string='Room Status', default='available')
     active = fields.Boolean(string='Active', default=True)
+    weekend_multiplier = fields.Float(string='Weekend Price Multiplier', default=1.2, help="Multiplier for weekend pricing")
+    
+    weekend_price = fields.Float(
+        string='Weekend Price',
+        compute='_compute_weekend_price',
+        store=True
+    )
+
+    @api.depends('price', 'weekend_multiplier')
+    def _compute_weekend_price(self):
+        for record in self:
+            record.weekend_price = record.price * record.weekend_multiplier
     
     @api.model
     def update_room_status(self):
@@ -78,7 +90,18 @@ class RoomManagement(models.Model):
             'view_mode': 'list',
             'target': 'current',
         }
-
+        
+    def get_available_rooms(self, checkin_date, checkout_date, hotel_id):
+        domain = [('hotel_id', '=', hotel_id), ('status', '=', 'available')]
+        booked_rooms = self.env['room.booking'].search([
+            ('hotel_id', '=', hotel_id),
+            ('checkin_date', '<', checkout_date),
+            ('checkout_date', '>', checkin_date),
+            ('status', '=', 'booked')
+        ])
+        booked_room_ids = booked_rooms.mapped('room_id').ids
+        domain.append(('id', 'not in', booked_room_ids))
+        return self.search(domain)
         
     _sql_constraints = [
         ('unique_room_per_hotel', 'unique(hotel_id, room_code)', 'Room code must be unique within a hotel!')

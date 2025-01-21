@@ -19,6 +19,7 @@ class BookingPaymentWizard(models.TransientModel):
                 raise UserError("The payment amount must be greater than zero.")
 
             booking = wizard.booking_id
+            
             booking.write({
                 'payment_status': 'paid',  # Ensure you have a field payment_status in room.booking
                 'payment_date': wizard.payment_date,

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
 import logging
@@ -11,6 +12,7 @@ class RoomBooking(models.Model):
     booking_code = fields.Char(string='Booking Code', required=True, copy=False, readonly=True, 
                                default=lambda self: self.env['ir.sequence'].next_by_code('room.booking'))
     customer_name = fields.Char(string='Customer Name', required=True)
+    customer_address = fields.Text(string='Customer Address')
     customer_email = fields.Char(string='Customer Email', required=True)
     customer_phone = fields.Char(string='Customer Phone', required=True)
     booking_date = fields.Date(string='Booking Date', default=fields.Date.today, required=True)
@@ -22,6 +24,7 @@ class RoomBooking(models.Model):
                               domain="[('hotel_id', '=', hotel_id), ('status', '=', 'available')]")
     room_code = fields.Char(related='room_id.room_code', string='Room Code', readonly=True)
     room_price = fields.Float(related='room_id.price', string='Room Price', readonly=True)
+    special_requests = fields.Text(string='Special Requests')
     service_ids = fields.Many2many('booking.service', 'booking_service_rel', 'booking_id', 'service_id', string='Services')
     checkin_date = fields.Datetime(string='Check-in Date', required=True)
     checkout_date = fields.Datetime(string='Check-out Date', required=True)
@@ -29,15 +32,69 @@ class RoomBooking(models.Model):
     active = fields.Boolean(string='Active', default=True)
     payment_status = fields.Selection([('unpaid', 'Unpaid'), ('paid', 'Paid')], string='Payment Status', default='unpaid')
     payment_date = fields.Datetime(string='Payment Date', readonly=True)
+    payment_method = fields.Selection([('credit_card', 'Credit Card'), ('cash', 'Cash'), ('bank_transfer', 'Bank Transfer')], string='Payment Method')
     payment_amount = fields.Float(string='Payment Amount', readonly=True)
-    
-    total_amount = fields.Float(
-        string='Total Amount',
-        compute='_compute_total_amount',
+    booking_product_ids = fields.One2many('booking.product', 'booking_id', string="Booking Products")
+    booking_reference = fields.Char(string='Booking Reference')  # New field
+
+    normal_day_total = fields.Float(
+        string='Total Normal Day Price',
+        compute='_compute_booking_prices',
         store=True
     )
-    sale_order_id = fields.Many2one('sale.order', string='Sale Order', readonly=True)         
 
+    weekend_total = fields.Float(
+        string='Total Weekend Price',
+        compute='_compute_booking_prices',
+        store=True
+    )
+
+    total_amount = fields.Float(
+        string='Total Amount',
+        compute='_compute_booking_prices',
+        store=True
+    )
+    sale_order_id = fields.Many2one('sale.order', string='Sale Order', readonly=True)  
+    product_ids = fields.Many2many(
+        'product.product', 
+        string='Products',  # Use a domain if you want to filter by certain criteria
+        help="Select the products for this booking"
+    ) 
+    quantity = fields.Integer(string="Quantity", default=1)
+   
+    @api.depends('checkin_date', 'checkout_date', 'room_price', 'booking_product_ids')
+    def _compute_booking_prices(self):
+        for record in self:
+            total_days = 0
+            weekend_days = 0
+            normal_days = 0
+            normal_price_total = 0.0
+            weekend_price_total = 0.0
+            service_cost = sum(product.quantity * product.price for product in record.booking_product_ids)
+
+            if record.checkin_date and record.checkout_date:
+                checkin = record.checkin_date.date()
+                checkout = record.checkout_date.date()
+                
+                # Iterate over the days in the booking period
+                current_date = checkin
+                while current_date <= checkout:
+                    total_days += 1
+                    if current_date.weekday() in [5, 6]:  # Saturday (5) and Sunday (6)
+                        weekend_days += 1
+                    else:
+                        normal_days += 1
+                    current_date += timedelta(days=1)
+
+                weekend_price = record.room_price * record.room_id.weekend_multiplier
+                normal_price_total = normal_days * record.room_price
+                weekend_price_total = weekend_days * weekend_price
+
+            record.normal_day_total = normal_price_total
+            record.weekend_total = weekend_price_total
+            record.total_amount = normal_price_total + weekend_price_total + service_cost
+            
+    
     def action_create_invoice(self):
         for record in self:
             if record.payment_status == 'paid':
@@ -75,7 +132,7 @@ class RoomBooking(models.Model):
                 sale_order.partner_id = partner.id
                 sale_order.note = (sale_order.note or '') + f"\nUpdated Booking: {record.booking_code}"
 
-            # Handle Room Booking Line
+            # Handle Room Booking Line (if applicable)
             if record.room_code and record.checkin_date and record.checkout_date:
                 duration = (record.checkout_date - record.checkin_date).days
                 if duration <= 0:
@@ -85,15 +142,13 @@ class RoomBooking(models.Model):
                 if not product:
                     product = self.env['product.product'].create({
                         'name': "Booking",
-                        'type': 'service',
-                        'list_price': record.total_amount,
+                        'type': 'service',  # Assuming it's a service
+                        'list_price': record.room_price,
                     })
 
-                # Update or create sale order line for the room
-                room_line = self.env['sale.order.line'].search([
-                    ('order_id', '=', sale_order.id),
-                    ('product_id', '=', product.id)
-                ], limit=1)
+                # Create or update sale order line for the room
+                room_line = self.env['sale.order.line'].search([(
+                    'order_id', '=', sale_order.id), ('product_id', '=', product.id)], limit=1)
 
                 if room_line:
                     room_line.update({
@@ -109,35 +164,31 @@ class RoomBooking(models.Model):
                         'product_id': product.id,
                     })
 
-            # Handle Service Lines
-            for service in record.service_ids:
-                product_name = f"{service.name} - {service.description}"
-                product = self.env['product.product'].search([('name', '=', product_name)], limit=1)
-                if not product:
-                    product = self.env['product.product'].create({
-                        'name': product_name,
-                        'type': 'service',
-                        'list_price': service.price,
-                    })
+                  # Add Products from booking_product_ids to Sale Order Lines
+            for booking_product in record.booking_product_ids:  # Loop through the booking_product_ids field
+                product = booking_product.product_id
+                if product.qty_available < booking_product.quantity:
+                    raise UserError(f"Not enough stock for {product.name}. Available quantity: {product.qty_available}")
 
-                # Search for an existing sale.order.line for this service
-                service_line = self.env['sale.order.line'].search([
+                existing_line = self.env['sale.order.line'].search([
                     ('order_id', '=', sale_order.id),
                     ('product_id', '=', product.id)
                 ], limit=1)
 
-                if service_line:
-                    service_line.update({
-                        'product_uom_qty': service.quantity,
-                        'price_unit': service.price,
+                if existing_line:
+                    # Update the existing line if it exists
+                    existing_line.update({
+                        'product_uom_qty': booking_product.quantity,  # Update quantity
+                        'price_unit': booking_product.price,  # Update price
                     })
                 else:
+                # Create sale order line for the product from booking_product
                     self.env['sale.order.line'].create({
                         'order_id': sale_order.id,
-                        'name': product_name,
-                        'product_uom_qty': service.quantity,
-                        'price_unit': service.price,
                         'product_id': product.id,
+                        'product_uom_qty': booking_product.quantity,  
+                        'price_unit': booking_product.price,  
+                        'name': product.name,
                     })
 
             # Link Sale Order to Booking
@@ -150,20 +201,33 @@ class RoomBooking(models.Model):
             'res_model': 'sale.order',
             'res_id': sale_order.id,
         }
+    
+    # def action_confirm_payment(self):
+    #     for record in self:
+    #         if record.product_ids:
+    #             for product in record.product_ids: 
+    #                 stock_quant = self.env['stock.quant'].search([
+    #                     ('product_id', '=', product.id),
+    #                     ('location_id', '=', self.env.ref('stock.stock_location_stock').id)  # Default location
+    #                 ], limit=1)
+                    
+    #                 if stock_quant:
+    #                     # Log the current quantity before reducing
+    #                     _logger.info("Product: %s, Current Quantity: %s", product.name, stock_quant.quantity)
+                        
+    #                     # Reduce the quantity
+    #                     new_quantity = stock_quant.quantity - record.quantity
+                        
+    #                     # Log the new quantity after updating
+    #                     _logger.info("Product: %s, New Quantity: %s", product.name, new_quantity)
+                        
+    #                     # Update the quantity
+    #                     stock_quant.write({'quantity': new_quantity})
 
-        
-    @api.depends('checkin_date', 'checkout_date', 'room_price', 'service_ids.price')
-    def _compute_total_amount(self):
-        for record in self:
-            room_cost = 0.0
-            service_cost = sum(service.price for service in record.service_ids)
+    #             # Optionally, you can also set the booking's status to "Paid"
+    #             record.payment_status = 'paid'
 
-            if record.checkin_date and record.checkout_date and record.room_price:
-                duration = (record.checkout_date - record.checkin_date).total_seconds() / 3600
-                duration_in_days = duration / 24
-                room_cost = max(duration_in_days, 1) * record.room_price
 
-            record.total_amount = room_cost + service_cost
     
     @api.model
     def create(self, vals):

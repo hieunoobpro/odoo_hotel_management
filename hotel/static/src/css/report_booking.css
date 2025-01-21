@@ -1,0 +1,85 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #333;
+}
+
+.page {
+    padding: 20px;
+    border: 1px solid #ddd;
+    margin: 10px auto;
+    width: 80%;
+    background-color: #fff;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    border-bottom: 2px solid #4CAF50;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+}
+
+.header h2 {
+    font-size: 24px;
+    margin: 0;
+    color: #4CAF50;
+}
+
+.header h4 {
+    font-size: 16px;
+    margin: 5px 0;
+    color: #333;
+}
+
+/* Table Styles */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.table-bordered td {
+    padding: 10px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+.table-striped thead {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.table-striped tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.table-striped td {
+    padding: 10px;
+    font-size: 14px;
+}
+
+/* Total */
+.total {
+    text-align: right;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 20px;
+    color: #4CAF50;
+}
+
+/* Signature */
+.signature {
+    margin-top: 40px;
+    text-align: center;
+    font-style: italic;
+    border-top: 2px solid #4CAF50;
+    padding-top: 20px;
+}
+
+.signature p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #333;
+}

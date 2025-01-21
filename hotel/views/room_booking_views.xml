@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="portal_my_bookings" name="My Bookings">
+        <t t-call="portal.portal_layout">
+            <div class="container mt-4">
+                <h1>My Bookings</h1>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Booking Code</th>
+                            <th>Customer Name</th>
+                            <th>Booking Date</th>
+                            <th>Hotel Name</th>
+                            <th>Room Code</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="bookings" t-as="booking">
+                            <tr>
+                                <td><t t-esc="booking.booking_code"/></td>
+                                <td><t t-esc="booking.customer_name"/></td>
+                                <td><t t-esc="booking.booking_date"/></td>
+                                <td><t t-esc="booking.hotel_name"/></td>
+                                <td><t t-esc="booking.room_code"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+</odoo>

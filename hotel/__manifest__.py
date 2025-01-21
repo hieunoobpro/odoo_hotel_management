@@ -5,7 +5,7 @@
     'author': 'Nguyen Duy Hieu',
     'summary': 'Manage hotels, rooms, and bookings',
     'description': 'A module to manage hotel operations including room management and bookings.',
-    'depends': ['base', 'hr', 'account', 'sale' ],
+    'depends': ['base', 'hr', 'account', 'sale', "product", 'website', 'portal'],
     'data': [
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',
@@ -18,12 +18,28 @@
         'views/employee_views.xml',
         'views/service_views.xml',
         'views/payment_booking_wizard.xml',
+        'views/product_views.xml',
         'views/menu_views.xml',
         'views/actions.xml',
-        'views/booking_report.xml',
-        'views/booking_report_template.xml',
-        'data/favorite_filters.xml'
+        'views/sale_order_views.xml',
+        'views/room_booking_views.xml',
+        'report/booking_report.xml',
+        'report/booking_report_template.xml',
+        'data/favorite_filters.xml',
+        'template/booking_portal_template.xml',
+        'template/room_portal_template.xml',
+        'template/room_booking_page.xml',
+    
     ],
+    'assets': {
+        'web.report_assets_common': [
+            'hotel/static/src/css/report_booking.css',
+        ],
+        'web.assets_frontend': [
+            'hotel/static/src/css/booking_form.css',  # Ensure this line is present
+        ],
+    },
+
     'installable': True,
     'application': True,
 }

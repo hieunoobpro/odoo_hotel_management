@@ -1,0 +1,12 @@
+<odoo>
+    <template id="available_rooms_template">
+        <t t-foreach="available_rooms" t-as="room">
+            <div class="room">
+                <h2><t t-esc="room.name" /></h2>
+                <p>Room Code: <t t-esc="room.room_code" /></p>
+                <p>Price: <t t-esc="room.price" /></p>
+                <a t-att-href="'/portal/book_room/%s' % room.id">Book Now</a>
+            </div>
+        </t>
+    </template>
+</odoo>

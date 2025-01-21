@@ -1,0 +1,7 @@
+<odoo>
+    <template id="report_css" name="Report CSS">
+        <style type="text/css">
+            <link rel="stylesheet" href="/hotel/static/src/css/report_booking.css"/>
+        </style>
+    </template>
+</odoo>

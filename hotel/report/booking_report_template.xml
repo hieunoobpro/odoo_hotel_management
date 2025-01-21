@@ -1,0 +1,207 @@
+<odoo>
+    <template id="report_booking_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="booking">
+                <div class="page">
+                    <head>
+                    <style>
+                        @page {
+                            size: A4;
+                            margin: 20mm 15mm;
+                        }
+
+                        body {
+                            font-family: Arial, sans-serif;
+                            font-size: 16px;
+                            color: #333;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            margin-top: 200px;
+                        }
+
+                        .page {
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: center;
+                            align-items: center;
+                            padding: 10px;
+                            width: 100%;
+                            background-color: #fff;
+                        }
+
+                        .header {
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            width: 100%;
+                            border-bottom: 2px solid #4CAF50;
+                            padding-bottom: 10px;
+                        }
+
+                        .logo-container {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                        }
+
+                        .logo-container img {
+                            max-width: 100px;
+                            height: auto;
+                        }
+
+                        .company-name {
+                            font-size: 14px;
+                            font-weight: bold;
+                            margin-top: 5px;
+                            text-align: center;
+                        }
+
+                        .header-content {
+                            text-align: center;
+                            flex-grow: 1;
+                        }
+
+                        .header-content h2 {
+                            font-size: 22px;
+                            margin: 5px 0;
+                            color: #4CAF50;
+                        }
+
+                        .header-content h4 {
+                            font-size: 16px;
+                            margin: 3px 0;
+                            color: #333;
+                        }
+
+                        .info-container {
+                            display: flex;
+                            justify-content: space-between;
+                            width: 100%;
+                            gap: 10px;
+                            margin-bottom: 5px;
+                        }
+
+                        .info-box {
+                            flex: 1;
+                            border: 1px solid #ccc;
+                            padding: 8px;
+                            font-size: 16px;
+                            background-color: #f9f9f9;
+                        }
+
+                        .table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 15px;
+                        }
+
+                        .table-bordered td {
+                            padding: 8px;
+                            border: 1px solid #ccc;
+                            font-size: 16px;
+                        }
+
+                        .table-striped thead {
+                            background-color: #4CAF50;
+                            color: white;
+                        }
+
+                        .table-striped tbody tr:nth-child(even) {
+                            background-color: #f9f9f9;
+                        }
+
+                        .total {
+                            text-align: right;
+                            font-size: 18px;
+                            font-weight: bold;
+                            margin-top: 10px;
+                            color: #4CAF50;
+                        }
+
+                        .signature {
+                            margin-top: 30px;
+                            text-align: right;
+                            font-style: italic;
+                            border-top: 2px solid #4CAF50;
+                            padding-top: 10px;
+                            width: 50%;
+                            margin-left: auto;
+                        }
+
+                        .signature p {
+                            margin: 3px 0;
+                            font-size: 16px;
+                            color: #333;
+                        }
+                    </style>
+                    </head>
+
+                    <div class="header">
+                        <div class="logo-container">
+                            <img src="/hotel/static/description/icon.png" alt="Company Logo"/>
+                        </div>
+                        <div class="header-content">
+                            <h2>Hotel Booking Confirmation</h2>
+                            <h4><strong>Booking Code:</strong> <t t-esc="booking.booking_code or 'N/A'"/></h4>
+                            <h4><strong>Sale Code:</strong> <t t-esc="booking.sale_order_id.name or 'N/A'"/></h4>
+                        </div>
+                    </div>
+
+                    <div class="info-container">
+                        <div class="info-box"><strong>Hotel:</strong> <t t-esc="booking.hotel_id.name or 'N/A'"/></div>
+                        <div class="info-box"><strong>Room:</strong> <t t-esc="booking.room_code or 'N/A'"/></div>
+                    </div>
+                    <div class="info-container">
+                        <div class="info-box"><strong>Customer Name:</strong> <t t-esc="booking.customer_name or 'N/A'"/></div>
+                        <div class="info-box"><strong>Email:</strong> <t t-esc="booking.customer_email or 'N/A'"/></div>
+                    </div>
+                    <div class="info-container">
+                        <div class="info-box"><strong>Phone:</strong> <t t-esc="booking.customer_phone or 'N/A'"/></div>
+                        <div class="info-box"><strong>Check-in Date:</strong> <t t-esc="booking.checkin_date or 'N/A'"/></div>
+                        <div class="info-box"><strong>Check-out Date:</strong> <t t-esc="booking.checkout_date or 'N/A'"/></div>
+                    </div>
+
+                    <h3 class="total">Bill Information</h3>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Subtotal</th>
+                                <th>Tax</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="booking.sale_order_id.order_line" t-as="line">
+                                <tr>
+                                    <td t-esc="line.product_id.name or 'N/A'"/>
+                                    <td t-esc="line.name or 'N/A'"/>
+                                    <td t-esc="line.product_uom_qty or 1"/>
+                                    <td t-esc="line.price_unit or 0.0"/> 
+                                    <td t-esc="line.price_subtotal or 0.0"/> 
+                                    <td>
+                                        <t t-foreach="line.tax_id" t-as="tax">
+                                            <span t-esc="tax.name"/> (<t t-esc="tax.amount"/>%)<br/>
+                                        </t>
+                                    </td>
+                                    <td t-esc="line.price_total or 0.0"/> 
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+
+                    <h4 class="total">Total: <t t-esc="booking.sale_order_id.amount_total or 0.0"/> USD</h4>
+
+                    <div class="signature">
+                        <p><strong>Date:</strong> <t t-esc="today.strftime('%d %B %Y')"/></p>
+                        <p><strong>Customer Signature:</strong></p>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

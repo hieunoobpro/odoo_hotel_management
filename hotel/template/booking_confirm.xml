@@ -1,0 +1,10 @@
+<odoo>
+    <template id="booking_confirmation">
+        <h2>Booking Confirmed</h2>
+        <p>Booking Code: <t t-esc="booking.booking_code" /></p>
+        <p>Room: <t t-esc="booking.room_id.name" /></p>
+        <p>Check-in Date: <t t-esc="booking.checkin_date" /></p>
+        <p>Check-out Date: <t t-esc="booking.checkout_date" /></p>
+        <p>Thank you for booking!</p>
+    </template>
+</odoo>

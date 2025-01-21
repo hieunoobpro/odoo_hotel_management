@@ -64,25 +64,25 @@
                         </group>
                         <group>
                             <field name="room_price" readonly="1"/>
-                            <field name="total_amount" readonly="1"/>
+                            <field name="normal_day_total" readonly="1"/>
+                            <field name="weekend_total" readonly="1"/>
                         </group>
                     </group>
 
-                    <!-- Additional Services -->
-                    <group>
-                        <field name="service_ids">
-                            <list editable="bottom">
-                                <field name="name"/>
-                                <field name="description"/>
-                                <field name="price"/>
-                                <field name="quantity"/>
-                            </list>
-                        </field>
-                    </group>
-
+                  <group>
+                    <field name="booking_product_ids">
+                        <list editable="bottom">
+                            <field name="product_id"/>
+                            <field name="quantity"/>
+                            <field name="price"/>
+                        </list>
+                    </field>
+                    <field name="total_amount" readonly="1"/>
+                  </group>
                     <!-- Action Buttons -->
                         <button name="action_confirm_create" type="object" string="Confirm" class="btn-primary"/>
                         <button name="action_create_invoice" type="object" string="Create Invoice" class="btn-primary"/>
+                        <!-- <button name="action_confirm_payment" string="Confirm Payment" type="object" class="btn-primary"/> -->
                 </sheet>
             </form>
         </field>

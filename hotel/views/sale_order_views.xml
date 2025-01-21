@@ -1,16 +1,17 @@
-<record id="view_order_form_inherit_booking" model="ir.ui.view">
-    <field name="name">sale.order.form.inherit.booking</field>
-    <field name="model">sale.order</field>
-    <field name="inherit_id" ref="sale.view_order_form"/>
-    <field name="arch" type="xml">
-        <group name="order_details" position="inside">
-            <group string="Booking Information">
-                <field name="room_code"/>
-                <field name="checkin_date"/>
-                <field name="checkout_date"/>
-                <field name="customer_email"/>
-                <field name="customer_phone"/>
-            </group>
-        </group>
-    </field>
-</record>
+<odoo>
+    <data>
+        <!-- Kế thừa view của sale.order -->
+        <record id="view_order_form_inherit" model="ir.ui.view">
+            <field name="name">sale.order.form.inherit</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <!-- Chèn thêm các trường liên quan đến booking -->
+                <xpath expr="//form//sheet//group//group" position="inside">
+                    <field name="checkin_date"/>
+                    <field name="checkout_date"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
