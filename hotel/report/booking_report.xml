@@ -8,4 +8,12 @@
         <field name="print_report_name">'Booking_Report_%s' % (object.booking_code)</field>
         <field name="binding_model_id" ref="hotel.model_room_booking"/>
     </record>
+     <report
+        id="report_room_availability"
+        model="room.booking"
+        string="Room Availability Report"
+        report_type="qweb-pdf"
+        name="hotel.report_room_availability_template"
+        file="hotel.report_room_availability_template"
+        attachment_use="False"/>
 </odoo>

@@ -25,9 +25,9 @@ class RoomBooking(models.Model):
     room_code = fields.Char(related='room_id.room_code', string='Room Code', readonly=True)
     room_price = fields.Float(related='room_id.price', string='Room Price', readonly=True)
     special_requests = fields.Text(string='Special Requests')
-    service_ids = fields.Many2many('booking.service', 'booking_service_rel', 'booking_id', 'service_id', string='Services')
     checkin_date = fields.Datetime(string='Check-in Date', required=True)
     checkout_date = fields.Datetime(string='Check-out Date', required=True)
+    service_ids = fields.Many2many('booking.service', 'booking_service_rel', 'booking_id', 'service_id', string='Services')
     status = fields.Selection([('new', 'New'), ('booked', "Booked")], string='Booking Status', default='new')
     active = fields.Boolean(string='Active', default=True)
     payment_status = fields.Selection([('unpaid', 'Unpaid'), ('paid', 'Paid')], string='Payment Status', default='unpaid')
@@ -35,8 +35,9 @@ class RoomBooking(models.Model):
     payment_method = fields.Selection([('credit_card', 'Credit Card'), ('cash', 'Cash'), ('bank_transfer', 'Bank Transfer')], string='Payment Method')
     payment_amount = fields.Float(string='Payment Amount', readonly=True)
     booking_product_ids = fields.One2many('booking.product', 'booking_id', string="Booking Products")
-    booking_reference = fields.Char(string='Booking Reference')  # New field
-
+    free_product_ids = fields.One2many('booking.product', 'booking_id', string="Free Products", domain=[('price', '=', 0)])
+    paid_product_ids = fields.One2many('booking.product', 'booking_id', string="Paid Products", domain=[('price', '>', 0)])
+    
     normal_day_total = fields.Float(
         string='Total Normal Day Price',
         compute='_compute_booking_prices',
@@ -164,10 +165,10 @@ class RoomBooking(models.Model):
                         'product_id': product.id,
                     })
 
-                  # Add Products from booking_product_ids to Sale Order Lines
+            # Add Products from booking_product_ids to Sale Order Lines
             for booking_product in record.booking_product_ids:  # Loop through the booking_product_ids field
                 product = booking_product.product_id
-                if product.qty_available < booking_product.quantity:
+                if product.type != 'service' and product.qty_available < booking_product.quantity:
                     raise UserError(f"Not enough stock for {product.name}. Available quantity: {product.qty_available}")
 
                 existing_line = self.env['sale.order.line'].search([
@@ -182,7 +183,7 @@ class RoomBooking(models.Model):
                         'price_unit': booking_product.price,  # Update price
                     })
                 else:
-                # Create sale order line for the product from booking_product
+                    # Create sale order line for the product from booking_product
                     self.env['sale.order.line'].create({
                         'order_id': sale_order.id,
                         'product_id': product.id,

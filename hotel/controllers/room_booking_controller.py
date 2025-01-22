@@ -18,12 +18,17 @@ class RoomBookingController(http.Controller):
     @http.route(['/book/room/<int:room_id>'], type='http', auth="user", website=True)
     def portal_booking_form(self, room_id, **kw):
         room = request.env['room.management'].browse(room_id)
-        services = request.env['booking.service'].search([])
+        booking_products = request.env['product.product'].search([])
+        free_products = [product for product in booking_products if product.list_price == 0]
+        additional_products = [product for product in booking_products if product.list_price > 0]
+
         values = {
             'room': room,
-            'services': services,
+            'free_products': free_products,
+            'additional_products': additional_products,
         }
-        return request.render("hotel.portl_abooking_form", values)
+
+        return request.render("hotel.portal_booking_form", values)
 
     @http.route(['/submit/booking'], type='http', auth="user", methods=['POST'], website=True)
     def submit_booking(self, **post):
@@ -38,11 +43,17 @@ class RoomBookingController(http.Controller):
         checkout_date = post.get('checkout_date')
         special_requests = post.get('special_requests')
         payment_method = post.get('payment_method')
-        service_ids = post.get('services', [])
-        if isinstance(service_ids, str):
-            service_ids = [int(service_ids)]
-        elif isinstance(service_ids, list):
-            service_ids = [int(service_id) for service_id in service_ids]
+        
+        # Handle booking products
+        booking_product_ids = []
+        for product_id in request.httprequest.form.getlist('booking_product_ids'):
+            quantity = int(post.get(f'quantity_{product_id}'))
+            price = float(post.get(f'price_{product_id}'))
+            booking_product_ids.append((0, 0, {
+                'product_id': int(product_id),
+                'quantity': quantity,
+                'price': price,
+            }))
 
         booking = request.env['room.booking'].create({
             'room_id': room_id,
@@ -56,23 +67,17 @@ class RoomBookingController(http.Controller):
             'checkout_date': checkout_date,
             'special_requests': special_requests,
             'payment_method': payment_method,
-            'service_ids': [(6, 0, service_ids)],
+            'booking_product_ids': booking_product_ids,
         })
 
         return request.redirect('/my/bookings')
-    
-    @http.route(['/my/bookings'], type='http', auth="user", website=True)
-    
-    def portal_my_bookings(self, **kw):
 
+    @http.route(['/my/bookings'], type='http', auth="user", website=True)
+    def portal_my_bookings(self, **kw):
         bookings = request.env['room.booking'].search([
             ('customer_email', '=', request.env.user.email),
         ])
-        print(f"Fetching bookings for customer: {bookings.customer_email}")
-
         values = {
             'bookings': bookings,
         }
-        
         return request.render("hotel.portal_my_bookings", values)
-           

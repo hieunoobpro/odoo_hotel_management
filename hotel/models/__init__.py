@@ -6,6 +6,7 @@ from . import employee
 from . import payment_wizard
 from . import service
 from . import report_booking_document
+from . import room_available_wizard
 from . import product
 from . import booking_product
 from . import product_inherit

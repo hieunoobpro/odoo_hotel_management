@@ -1,0 +1,25 @@
+<odoo>
+    <record id="view_room_availability_wizard" model="ir.ui.view">
+        <field name="name">room.availability.wizard.form</field>
+        <field name="model">room.availability.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Room Availability">
+                <group>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                </group>
+                <footer>
+                    <button string="Generate Report" type="object" name="action_generate_report" class="btn-primary"/>
+                    <button string="Cancel" class="btn-default" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_room_availability_wizard" model="ir.actions.act_window">
+        <field name="name">Room Availability Wizard</field>
+        <field name="res_model">room.availability.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

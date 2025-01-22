@@ -1,0 +1,23 @@
+<template id="report_room_availability_template">
+    <t t-call="web.basic_layout">
+        <div class="page">
+            <h2>Room Availability Report</h2>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Room</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="rooms" t-as="room">
+                        <td><t t-esc="room.name"/></td>
+                        <td><t t-esc="room.status"/></td>
+                        <td><t t-esc="room.date"/></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </t>
+</template>
